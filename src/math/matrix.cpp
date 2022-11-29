@@ -268,8 +268,8 @@ namespace math
 	{
 		return matrix({
 			{ 1.f, 0.f, 0.f, 0.f },
-			{ 0.f, cosf(-angle), sinf(-angle), 0.f },
-			{ 0.f, -sinf(-angle), cosf(-angle), 0.f },
+			{ 0.f, cosf(angle), sinf(angle), 0.f },
+			{ 0.f, -sinf(angle), cosf(angle), 0.f },
 			{ 0.f, 0.f, 0.f, 1.f }
 		});
 
@@ -278,8 +278,8 @@ namespace math
 	matrix matrix::rotation_y(const float angle)
 	{
 		return matrix({
-			{ cosf(-angle), sinf(-angle), 0.f, 0.f },
-			{ -sinf(-angle), cosf(-angle), 0.f, 0.f },
+			{ cosf(angle), sinf(angle), 0.f, 0.f },
+			{ -sinf(angle), cosf(angle), 0.f, 0.f },
 			{ 0.f, 0.f, 1.f, 0.f },
 			{ 0.f, 0.f, 0.f, 1.f }
 		});

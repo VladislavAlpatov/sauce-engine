@@ -29,15 +29,15 @@ namespace engine
 			{1.f, 0.f, 0.f, 0.f},
 			{0.f, 1.f, 0.f, 0.f},
 			{0.f, 0.f, 1.f, 0.f},
-			{-m_vOrigin.at(0, 0), -m_vOrigin.at(0, 2), -m_vOrigin.at(0, 1), 1.f},
+			{-m_vOrigin.at(0, 0), -m_vOrigin.at(0, 1), -m_vOrigin.at(0, 2), 1.f},
 		});
 	}
 	math::matrix Camera::orientation_matrix() const
 	{
 		return math::matrix({
 			{m_vRight.x,        m_vUp.x,        m_vForward.x,        0.f },
-			{m_vRight.z,        m_vUp.z,        m_vForward.z,        0.f },
 			{m_vRight.y,        m_vUp.y,        m_vForward.y,        0.f },
+			{m_vRight.z,        m_vUp.z,        m_vForward.z,        0.f },
 			{0.f,               0.f,            0.f,                 1.f }
 		});
 	}
@@ -56,12 +56,12 @@ namespace engine
 	{
 		return translation_matrix() * orientation_matrix();
 	}
-	math::matrix Camera::view_projection_matrix() const
+	math::matrix Camera::projection_matrix() const
 	{
 		const float fRight = tanf(math::deg_to_rad(m_fhFov) / 2.f);
 		const float fLeft  = -fRight;
 
-		const float vFov = math::deg_to_rad(m_fhFov) * (m_vViewPortSize.y / m_vViewPortSize.x) / 2.f;
+		const float vFov = math::deg_to_rad(m_fhFov) * (m_vViewPortSize.y / m_vViewPortSize.x);
 
 		const float fTop   = tanf(vFov/ 2.f);
 		const float fBottom = -fTop;
@@ -76,6 +76,23 @@ namespace engine
 	}
 	bool Camera::world_to_screen(const ImVec3& in, ImVec2& out)
 	{
+		auto projected = math::matrix({{in.x, in.y, in.z, 1.f}}) * (view_matrix() * projection_matrix());
+
+		if (projected.at(0, 3) <= 0.f)
+			return false;
+
+		projected /= projected.at(0, 3);
+
+		auto to_screen_matrix = math::matrix({
+			{m_vViewPortSize.x / 2,  0.f,                     0.f, 0.f},
+			{0.f,                    -m_vViewPortSize.y  / 2, 0.f, 0.f},
+			{0.f,                    0.f,                     1.f, 0.f},
+			{m_vViewPortSize.x  / 2, m_vViewPortSize.y  / 2,  0.f, 1.f},
+		});
+
+		projected *= to_screen_matrix;
+		out = {projected.at(0,0), projected.at(0, 1)};
+		return true;
 
 	}
 } // engine
