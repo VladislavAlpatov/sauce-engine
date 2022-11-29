@@ -2,7 +2,7 @@
 // Created by Vlad on 29.11.2022.
 //
 #pragma once
-#include "Camera.h"
+#include "camera.h"
 #include "../math/trigonometry.h"
 
 namespace engine
@@ -34,11 +34,17 @@ namespace engine
 	}
 	math::matrix Camera::orientation_matrix() const
 	{
+		const auto rot_mat_xy = math::matrix::rotation_x(m_vViewAngles.x) * math::matrix::rotation_y(m_vViewAngles.y);
+
+		auto right   = m_vRight * rot_mat_xy;
+		auto up      = m_vUp * rot_mat_xy;
+		auto forward = m_vForward * rot_mat_xy;
+
 		return math::matrix({
-			{m_vRight.x,        m_vUp.x,        m_vForward.x,        0.f },
-			{m_vRight.y,        m_vUp.y,        m_vForward.y,        0.f },
-			{m_vRight.z,        m_vUp.z,        m_vForward.z,        0.f },
-			{0.f,               0.f,            0.f,                 1.f }
+			{right.at(0, 0),        up.at(0, 0),        forward.at(0, 0),        0.f },
+			{right.at(0, 1),        up.at(0, 1),        forward.at(0, 1),        0.f },
+			{right.at(0, 2),        up.at(0, 2),        forward.at(0, 2),        0.f },
+			{0.f,                             0.f,                          0.f,                               1.f }
 		});
 	}
 	ImVec3 Camera::GetAbsOrigin()

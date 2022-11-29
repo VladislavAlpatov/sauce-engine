@@ -6,6 +6,8 @@
 #include "matrix.h"
 #include <utility>
 #include <stdexcept>
+#include "trigonometry.h"
+
 namespace math
 {
 	matrix::matrix(const size_t rows, const size_t columns)
@@ -264,8 +266,9 @@ namespace math
 		delete[] m_ppData;
 	}
 
-	matrix matrix::rotation_x(const float angle)
+	matrix matrix::rotation_x(float angle)
 	{
+		angle = deg_to_rad(angle);
 		return matrix({
 			{ 1.f, 0.f, 0.f, 0.f },
 			{ 0.f, cosf(angle), sinf(angle), 0.f },
@@ -275,8 +278,9 @@ namespace math
 
 	}
 
-	matrix matrix::rotation_y(const float angle)
+	matrix matrix::rotation_z(float angle)
 	{
+		angle = deg_to_rad(angle);
 		return matrix({
 			{ cosf(angle), sinf(angle), 0.f, 0.f },
 			{ -sinf(angle), cosf(angle), 0.f, 0.f },
@@ -286,10 +290,11 @@ namespace math
 
 	}
 
-	matrix matrix::rotation_z(const float angle)
+	matrix matrix::rotation_y(float angle)
 	{
+		angle = deg_to_rad(angle);
 		return matrix({
-			{ cosf(-angle), -sinf(angle), 0.f, 0.f },
+			{ cosf(angle), 0.f, -sinf(angle), 0.f },
 			{ 0.f, 1.f, 0.f, 0.f },
 			{ sinf(angle), 0.f, cosf(angle), 0.f },
 			{ 0.f, 0.f, 0.f, 1.f }

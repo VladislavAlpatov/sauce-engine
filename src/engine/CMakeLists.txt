@@ -1,1 +1,1 @@
-target_sources(sauce-engine PRIVATE Camera.cpp)
+target_sources(sauce-engine PRIVATE camera.cpp object.cpp)

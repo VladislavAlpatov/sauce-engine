@@ -3,7 +3,8 @@
 #include "imgui/imgui_impl_win32.h"
 #include <d3d9.h>
 #include <tchar.h>
-#include "engine/Camera.h"
+#include "engine/camera.h"
+#include "engine/object.h"
 
 // Data
 static LPDIRECT3D9              g_pD3D = NULL;
@@ -20,8 +21,8 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 int main(int, char**)
 {
 	setbuf(stdout, 0);
-	// Create application window
-	//ImGui_ImplWin32_EnableDpiAwareness();
+	auto obj = engine::Object("cube.obj");
+
 	WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL, L"ImGui Example", NULL };
 	::RegisterClassExW(&wc);
 	HWND hwnd = CreateWindowExW(0, wc.lpszClassName, L"Sauce Engine", WS_POPUP, 100, 100, 1280, 720, nullptr, nullptr, wc.hInstance, nullptr);
@@ -98,31 +99,38 @@ int main(int, char**)
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
-		ImVec2 proj;
+		for (const auto& face : obj.m_vFaces)
+		{
+			ImVec2 proj_1;
+			ImVec2 proj_2;
+			for (int i = 0; i < face.size()-1; i++)
+			{
+				if (camera.world_to_screen(obj.m_vVertexes[face[i]], proj_1) and camera.world_to_screen(obj.m_vVertexes[face[i+1]], proj_2))
+					ImGui::GetBackgroundDrawList()->AddLine(proj_1, proj_2, ImColor(255, 255, 255));
 
-		if (camera.world_to_screen({0,0,10}, proj))
-			ImGui::GetBackgroundDrawList()->AddCircleFilled(proj, 2, ImColor(255, 255, 255));
+
+			}
+			camera.world_to_screen(obj.m_vVertexes[0], proj_1);
+			camera.world_to_screen(obj.m_vVertexes[obj.m_vVertexes.size()-1], proj_2);
+
+			ImGui::GetBackgroundDrawList()->AddLine(proj_1, proj_2, ImColor(255, 255, 255));
+		}
 		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
 		{
 			static float f = 0.0f;
 			static int counter = 0;
 
 			ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+			{
+				ImGui::InputFloat("Cam Pitch", &camera.m_vViewAngles.x);
+				ImGui::InputFloat("Cam Yaw", &camera.m_vViewAngles.y);
 
-			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-			ImGui::Checkbox("Another Window", &show_another_window);
+				ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+				ImGui::End();
+			}
 
-			if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-				counter++;
-			ImGui::SameLine();
-			ImGui::Text("counter = %d", counter);
-
-			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			ImGui::End();
 		}
 
 		// 3. Show another simple window.
