@@ -78,7 +78,7 @@ int main(int, char**)
 	// Main loop
 	bool done = false;
 
-	engine::Camera camera({0.f, 0, -10.f}, 60.f, {1280, 720});
+	engine::Camera camera({-2.f, 0, -10.f}, 60.f, {1280, 720});
 	while (!done)
 	{
 		// Poll and handle messages (inputs, window resize, etc.)
@@ -99,19 +99,41 @@ int main(int, char**)
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
+		if (GetAsyncKeyState('W'))
+			camera.SetAbsOrigin(camera.GetAbsOrigin()+ImVec3(0,0, 1));
+
+		if (GetAsyncKeyState('S'))
+			camera.SetAbsOrigin(camera.GetAbsOrigin()+ImVec3(0,0, -1));
+
+		if (GetAsyncKeyState('A'))
+			camera.SetAbsOrigin(camera.GetAbsOrigin()+ImVec3(-1,0,0));
+
+		if (GetAsyncKeyState('D'))
+			camera.SetAbsOrigin(camera.GetAbsOrigin()+ImVec3(1,0,0));
+
 		for (const auto& face : obj.m_vFaces)
 		{
 			ImVec2 proj_1;
 			ImVec2 proj_2;
+
+			auto diff1 = obj.m_vVertexes[face[0]] - obj.m_vVertexes[face[1]];
+			auto diff2  = obj.m_vVertexes[face[2]] - obj.m_vVertexes[face[1]];
+
+			ImVec3 normal;
+			normal.x = diff1.y * diff2.z - diff1.z * diff2.y;
+			normal.y = diff1.z * diff2.x - diff1.x * diff2.z;
+			normal.z = diff1.x * diff2.y - diff1.y * diff2.x;
+
+			normal /= normal.Length();
+			if (normal.Dot(obj.m_vVertexes[face[0]] - camera.GetAbsOrigin()) < 0.f)
+				continue;
+
 			for (int i = 0; i < face.size()-1; i++)
-			{
 				if (camera.world_to_screen(obj.m_vVertexes[face[i]], proj_1) and camera.world_to_screen(obj.m_vVertexes[face[i+1]], proj_2))
 					ImGui::GetBackgroundDrawList()->AddLine(proj_1, proj_2, ImColor(255, 255, 255));
 
-
-			}
-			camera.world_to_screen(obj.m_vVertexes[0], proj_1);
-			camera.world_to_screen(obj.m_vVertexes[obj.m_vVertexes.size()-1], proj_2);
+			camera.world_to_screen(obj.m_vVertexes[face[0]], proj_1);
+			camera.world_to_screen(obj.m_vVertexes[face[2]], proj_2);
 
 			ImGui::GetBackgroundDrawList()->AddLine(proj_1, proj_2, ImColor(255, 255, 255));
 		}
